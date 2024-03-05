@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 
-
 @dataclass(repr=True)
 class Drink:
     """
@@ -10,7 +9,7 @@ class Drink:
     TODO: implement functionality for crashing the price
     """
 
-    name: int
+    name: int = field(repr=True)
     id: int
     min_price: int
     max_price: int
@@ -37,10 +36,14 @@ class Drink:
             self.historic_price.append(self.current_price)
 
     def can_sell_amount(self, amount: int) -> bool:
-        return self.nr_drinks - amount >= 0
+        return self.nr_drinks - amount >= 0 and amount >= 0
 
     def reset(self) -> None:
         self.current_price = self.starting_price
 
     def increase_drinks_nr(self, amount: int) -> None:
         self.nr_drinks += amount
+
+    def identifier(self) -> str:
+        return f"{self.id} : {self.name}"
+    
