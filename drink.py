@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 
+
 @dataclass(repr=True)
 class Drink:
     """
@@ -9,7 +10,7 @@ class Drink:
     TODO: implement functionality for crashing the price
     """
 
-    name: int = field(repr=True)
+    name: str = field(repr=True)
     id: int
     min_price: int
     max_price: int
@@ -20,9 +21,10 @@ class Drink:
 
     def __post_init__(self):
         self.historic_price.append(self.starting_price)
+        self.current_price = self.starting_price
 
     def modify_price(
-        self, is_sold: bool, price_change: float, drinks_sold: int, Drink=None
+        self, is_sold: bool, price_change: int, drinks_sold: int
     ) -> None:
         # Because this function is used to both increase and decrease the price of Drinks, we must check whether the product was sold in the last transaction
         if is_sold:
@@ -43,7 +45,9 @@ class Drink:
 
     def increase_drinks_nr(self, amount: int) -> None:
         self.nr_drinks += amount
-
-    def identifier(self) -> str:
-        return f"{self.id} : {self.name}"
     
+    def reset(self) -> None:
+        self.current_price = self.starting_price
+
+    def __repr__(self) -> str:
+        return f"{self.id} : {self.name}, current price = €{self.current_price:.2f}"

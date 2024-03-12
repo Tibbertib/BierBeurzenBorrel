@@ -1,5 +1,6 @@
 from drink import Drink
 
+
 class Borrel:
     """
     Class that runs the entire borrel. Should keep track of current drinks for sale.
@@ -13,14 +14,17 @@ class Borrel:
         self.balance = 0
         self.inventory = {}
         self.initialise_inventory()
-
-
+ 
     def initialise_inventory(self):
         """
         This will later be changed to read input from a csv file to improve usability
         """
-        self.inventory[0] = Drink("Hertog Jan", "0", 80,100,90,50,True)
-    
+        self.inventory[0] = Drink("Hertog Jan", 0, 80, 100, 90, 50, True)
+        self.inventory[1] = Drink("Heineken", 1,75,90,80,100,True)
+
+    def display_balance(self) -> None:
+        print(f"Current balance: €{self.balance}")
+
     def help(self) -> None:
         print("\n An overview of supported commands (case is ignored): \n")
         print("reset -> will reset all drink prices to the initial price")
@@ -29,23 +33,53 @@ class Borrel:
 
     def print_valid_stock(self) -> None:
         for value in self.inventory.values():
-            print(value.identifier())
+            print(value)
+
+    def update_prices(self,drink: Drink, amount: int):
+        """
+        Updates all prices of the drinks based on the latest sale. 
+        Parameter drink (Drink) is the drink that is sold, hence its price increases.
+        All other prices must decrease, as they are not sold in the latest transaction
+        """
+        price_change = 0.01
+        for value in self.inventory.values():
+            if value == drink:
+                value.modify_price(True, price_change, amount)
+            else:
+                value.modify_price(False, price_change,0)
+
+    def reset(self) -> None:
+        for value in self.inventory.values():
+            value.reset()
 
     def run_borrel(self) -> None:
         self.initialise_inventory()
-        id = int(input("ID of the drink sold: >> "))
 
-        while id not in self.inventory:
-            print("That input is not valid, please use a valid ID")
-            self.print_valid_stock()
+        while True:
             id = int(input("ID of the drink sold: >> "))
-        drink = self.inventory[id]
 
-        amount = int(input("Number of drinks sold: >> "))
-        while drink.can_sell_amount(amount) == False:
-            print("You can not sell this amount of drinks")
-            print(f"You can sell at most {self.inventory[id].nr_drinks} bottles")
+            while id not in self.inventory:
+                print("That input is not valid, please use a valid ID")
+                self.print_valid_stock()
+                id = int(input("ID of the drink sold: >> "))
+            drink = self.inventory[id]
+
             amount = int(input("Number of drinks sold: >> "))
+            while drink.can_sell_amount(amount) == False:
+                print("You can not sell this amount of drinks")
+                print(f"You can sell at most {drink.nr_drinks} bottles")
+                amount = int(input("Number of drinks sold: >> "))
+
+            sell_price = (drink.current_price * amount) / 100
+            profit = (drink.current_price - drink.starting_price) * amount
+            self.balance += profit
+            print(f"\nSold for €{drink.current_price:.2f} per bottle")
+            print(f"Sell price is €{sell_price:.2f}")
+            print("\n --------------------------- \n")
+
+            self.update_prices(drink, amount)
+            self.print_valid_stock()
+
 
 b = Borrel()
 b.run_borrel()
