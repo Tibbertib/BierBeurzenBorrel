@@ -53,19 +53,19 @@ class Borrel:
         self.initialise_inventory()
 
         while True:
-            id = int(input("ID of the drink sold: >> "))
+            id = safe_parse("ID of the drink sold: >> ")
 
             while id not in self.inventory:
                 print("That input is not valid, please use a valid ID")
                 self.print_valid_stock()
-                id = int(input("ID of the drink sold: >> "))
+                id = safe_parse("ID of the drink sold: >> ")
             drink = self.inventory[id]
 
-            amount = int(input("Number of drinks sold: >> "))
+            amount = safe_parse("Number of drinks sold: >> ")
             while drink.can_sell_amount(amount) == False:
                 print("You can not sell this amount of drinks")
                 print(f"You can sell at most {drink.nr_drinks} bottles")
-                amount = int(input("Number of drinks sold: >> "))
+                amount = safe_parse("Number of drinks sold: >> ")
 
             sell_price = (drink.current_price * amount) / 100
             profit = (drink.current_price - drink.starting_price) * amount
@@ -76,6 +76,14 @@ class Borrel:
 
             self.update_prices(drink, amount)
             self.print_valid_stock()
+
+def safe_parse(prompt: str) -> int:
+    result = input(prompt)
+    while result.isdigit() == False:
+        print("Input must be an integer \n")
+        result = input(prompt)
+    return int(result)
+
 
 
 b = Borrel()
