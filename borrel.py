@@ -1,5 +1,5 @@
 from drink import Drink
-
+import pickle
 
 class Borrel:
     """
@@ -11,13 +11,13 @@ class Borrel:
         self.balance = 0
         self.inventory = {}
         self.initialise_inventory()
- 
+
     def initialise_inventory(self):
         """
         This will later be changed to read input from a csv file to improve usability
         """
         self.inventory[0] = Drink("Hertog Jan", 0, 80, 100, 90, 50, True)
-        self.inventory[1] = Drink("Heineken", 1,75,90,80,100,True)
+        self.inventory[1] = Drink("Heineken", 1, 75, 90, 80, 100, True)
 
     def display_balance(self) -> None:
         print(f"Current balance: €{self.balance}")
@@ -25,16 +25,16 @@ class Borrel:
     def help(self) -> None:
         print("\n An overview of supported commands (case is ignored): \n")
         print("reset -> will reset all drink prices to the initial price")
-        print("balance -> will display the current balance of the borrel \n")
-        print("stats -> will display stats of the borrel \n")
+        print("balance -> will display the current balance of the borrel")
+        print("stats -> will display stats of the borrel")
 
     def print_valid_stock(self) -> None:
         for value in self.inventory.values():
             print(value)
 
-    def update_prices(self,drink: Drink, amount: int):
+    def update_prices(self, drink: Drink, amount: int):
         """
-        Updates all prices of the drinks based on the latest sale. 
+        Updates all prices of the drinks based on the latest sale.
         Parameter drink (Drink) is the drink that is sold, hence its price increases.
         All other prices must decrease, as they are not sold in the latest transaction
         """
@@ -43,29 +43,44 @@ class Borrel:
             if value == drink:
                 value.modify_price(True, price_change, amount)
             else:
-                value.modify_price(False, price_change,0)
+                value.modify_price(False, price_change, 0)
 
     def reset(self) -> None:
         for value in self.inventory.values():
             value.reset()
 
+    def quit(self) -> None:
+        with open("finalInventory.pkl", "wb") as f:
+            pickle.dump(self.inventory, f)
+        print("Final results of drinks sold written to file")
+        
+
     def run_borrel(self) -> None:
         self.initialise_inventory()
+        running = True 
 
-        while True:
-            id = safe_parse("ID of the drink sold: >> ")
+        while running:
+            id,running = self.safe_parse("ID of the drink sold: >> ")
+            if running == False:
+                return
 
             while id not in self.inventory:
                 print("That input is not valid, please use a valid ID")
                 self.print_valid_stock()
-                id = safe_parse("ID of the drink sold: >> ")
+                id, running = self.safe_parse("ID of the drink sold: >> ")
+                if running == False:
+                    return
             drink = self.inventory[id]
 
-            amount = safe_parse("Number of drinks sold: >> ")
+            amount, running = self.safe_parse("Number of drinks sold: >> ")
+            if running == False:
+                return
             while drink.can_sell_amount(amount) == False:
                 print("You can not sell this amount of drinks")
                 print(f"You can sell at most {drink.nr_drinks} bottles")
-                amount = safe_parse("Number of drinks sold: >> ")
+                amount, running = self.safe_parse("Number of drinks sold: >> ")
+                if running == False:
+                    return
 
             sell_price = (drink.current_price * amount) / 100
             profit = (drink.current_price - drink.starting_price) * amount
@@ -77,14 +92,18 @@ class Borrel:
             self.update_prices(drink, amount)
             self.print_valid_stock()
 
-def safe_parse(prompt: str) -> int:
-    result = input(prompt)
-    while result.isdigit() == False:
-        print("Input must be an integer \n")
+    def safe_parse(self, prompt: str) -> tuple[int, bool]:
         result = input(prompt)
-    return int(result)
-
+        if result == "quit":
+            return self.quit(), False
+        while result.isdigit() == False:
+            print("Input must be an integer \n")
+            result = input(prompt)
+        return int(result), True
 
 
 b = Borrel()
 b.run_borrel()
+file = open("finalInventory.pkl", "rb")
+data = pickle.load(file)
+print(data)
