@@ -17,10 +17,10 @@ class Drink:
     starting_price: int
     nr_drinks: int
     for_sale: bool = True
-    historic_price: list[int] = field(default_factory=list)
+    historic_prices: list[int] = field(default_factory=list)
 
     def __post_init__(self):
-        self.historic_price.append(self.starting_price)
+        self.historic_prices.append(self.starting_price)
         self.current_price = self.starting_price
 
     def modify_price(
@@ -32,10 +32,10 @@ class Drink:
             if self.nr_drinks <= 0:
                 self.for_sale = False
             self.current_price += price_change
-            self.historic_price.append(self.current_price)
+            self.historic_prices.append(self.current_price)
         else:
             self.current_price -= price_change
-            self.historic_price.append(self.current_price)
+            self.historic_prices.append(self.current_price)
 
     def can_sell_amount(self, amount: int) -> bool:
         return self.nr_drinks - amount >= 0 and amount >= 0
@@ -50,4 +50,4 @@ class Drink:
         self.current_price = self.starting_price
 
     def __repr__(self) -> str:
-        return f"{self.id} : {self.name}, current price = €{self.current_price:.2f}"
+        return f"{self.id} : {self.name}, current price = €{self.current_price/100:.2f}, drinks remaining = {self.nr_drinks}"

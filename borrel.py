@@ -1,5 +1,5 @@
-from drink import Drink
 import pickle
+from drink import Drink
 
 class Borrel:
     """
@@ -53,7 +53,7 @@ class Borrel:
         with open("finalInventory.pkl", "wb") as f:
             pickle.dump(self.inventory, f)
         print("Final results of drinks sold written to file")
-        
+                
 
     def run_borrel(self) -> None:
         self.initialise_inventory()
@@ -85,7 +85,7 @@ class Borrel:
             sell_price = (drink.current_price * amount) / 100
             profit = (drink.current_price - drink.starting_price) * amount
             self.balance += profit
-            print(f"\nSold for €{drink.current_price:.2f} per bottle")
+            print(f"\nSold for €{drink.current_price/100:.2f} per bottle")
             print(f"Sell price is €{sell_price:.2f}")
             print("\n --------------------------- \n")
 
