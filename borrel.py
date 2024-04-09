@@ -45,25 +45,50 @@ class Borrel:
             else:
                 value.modify_price(False, price_change, 0)
 
+    def sell_drink(self,drink: Drink, amount: int):
+        """
+        Function used to sell a drink. Used to show the sell price to
+        the user (i.e. how much somebody needs to pay for their order),
+        and updates the borrel balance
+        """
+        sell_price = (drink.current_price * amount) / 100
+        profit = (drink.current_price - drink.starting_price) * amount
+        self.balance += profit
+        print(f"\nSold for €{drink.current_price/100:.2f} per bottle")
+        print(f"Sell price is €{sell_price:.2f}")
+        print("\n --------------------------- \n")
+
     def reset(self) -> None:
+        """
+        Resets all drink prices in the inventory to their default value, 
+        which is stored in the Drink object associated with the drink
+        """
         for value in self.inventory.values():
             value.reset()
 
     def quit(self) -> None:
+        """
+        Used to properly shutdown the borrel at the end. Useful to determine how much of each drink has been sold.
+        """
         with open("finalInventory.pkl", "wb") as f:
             pickle.dump(self.inventory, f)
         print("Final results of drinks sold written to file")
-                
 
     def run_borrel(self) -> None:
+        """
+        Main control loop that takes care of running the borrel. Includes functionality
+        to parse input (orders) and update the inventory based on the input.
+        """
         self.initialise_inventory()
-        running = True 
+        # Keep track of a boolean flag that indicates when the program should be terminated
+        running = True
 
         while running:
-            id,running = self.safe_parse("ID of the drink sold: >> ")
+            id, running = self.safe_parse("ID of the drink sold: >> ")
             if running == False:
                 return
 
+            # Continue until a valid ID is entered. ID entered must be associated with a drink
             while id not in self.inventory:
                 print("That input is not valid, please use a valid ID")
                 self.print_valid_stock()
@@ -75,24 +100,27 @@ class Borrel:
             amount, running = self.safe_parse("Number of drinks sold: >> ")
             if running == False:
                 return
-            while drink.can_sell_amount(amount) == False:
+            
+            # Continue until user enters a valid amount of drinks to be ordered
+            while drink.can_sell_amount(amount) == False: # is possible to sell 0 drinks
                 print("You can not sell this amount of drinks")
                 print(f"You can sell at most {drink.nr_drinks} bottles")
                 amount, running = self.safe_parse("Number of drinks sold: >> ")
                 if running == False:
                     return
 
-            sell_price = (drink.current_price * amount) / 100
-            profit = (drink.current_price - drink.starting_price) * amount
-            self.balance += profit
-            print(f"\nSold for €{drink.current_price/100:.2f} per bottle")
-            print(f"Sell price is €{sell_price:.2f}")
-            print("\n --------------------------- \n")
-
+            self.sell_drink(drink, amount)
             self.update_prices(drink, amount)
             self.print_valid_stock()
 
     def safe_parse(self, prompt: str) -> tuple[int, bool]:
+        """
+        Used to make sure that we can properly parse inputs to integers.
+        Additionally, performs checks for other possible commands and calls 
+        the functions associated with these commands when needed. 
+        Returns the parsed result when appropiate, along with a flag that indicates
+        whether the program needs to continue running.
+        """
         result = input(prompt)
         if result == "quit":
             return self.quit(), False
@@ -102,8 +130,7 @@ class Borrel:
         return int(result), True
 
 
-b = Borrel()
-b.run_borrel()
-file = open("finalInventory.pkl", "rb")
-data = pickle.load(file)
-print(data)
+if __name__ == "__main__":
+
+    b = Borrel()
+    b.run_borrel()

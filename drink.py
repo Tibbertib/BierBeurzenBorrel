@@ -23,10 +23,14 @@ class Drink:
         self.historic_prices.append(self.starting_price)
         self.current_price = self.starting_price
 
-    def modify_price(
-        self, is_sold: bool, price_change: int, drinks_sold: int
-    ) -> None:
-        # Because this function is used to both increase and decrease the price of Drinks, we must check whether the product was sold in the last transaction
+    def modify_price(self, is_sold: bool, price_change: int, drinks_sold: int) -> None:
+        """
+        Used to update the price of all drinks. Because we update both the
+        price of the drink sold, and all drinks that weren't sold in this
+        transaction, we use the is_sold flag. We update the price according
+        to some external specification and decrease the number of available
+        drinks by the number ordered.
+        """
         if is_sold:
             self.nr_drinks -= drinks_sold
             if self.nr_drinks <= 0:
@@ -38,16 +42,23 @@ class Drink:
             self.historic_prices.append(self.current_price)
 
     def can_sell_amount(self, amount: int) -> bool:
-        return self.nr_drinks - amount >= 0 and amount >= 0
+        """
+        Used to check whether an ordered amount of drinks does not exceed current inventory.
+        Also possible to order 0 drinks, which may be useful when user accidentally enters the wrong ID
+        """
+        return self.for_sale and self.nr_drinks - amount >= 0 and amount >= 0
 
     def reset(self) -> None:
+        """
+        Return sell price to initial price
+        """
         self.current_price = self.starting_price
 
     def increase_drinks_nr(self, amount: int) -> None:
+        """
+        Add additional drinks to the inventory
+        """
         self.nr_drinks += amount
-    
-    def reset(self) -> None:
-        self.current_price = self.starting_price
 
     def __repr__(self) -> str:
         return f"{self.id} : {self.name}, current price = €{self.current_price/100:.2f}, drinks remaining = {self.nr_drinks}"
