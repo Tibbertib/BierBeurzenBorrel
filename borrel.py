@@ -1,5 +1,9 @@
 import pickle
+import time
+import matplotlib.pyplot as plt
 from drink import Drink
+
+plt.ion()
 
 class Borrel:
     """
@@ -10,6 +14,7 @@ class Borrel:
     def __init__(self) -> None:
         self.balance = 0
         self.inventory = {}
+        self.time_stamps = [time.time()]
         self.initialise_inventory()
 
     def initialise_inventory(self):
@@ -38,19 +43,20 @@ class Borrel:
         Parameter drink (Drink) is the drink that is sold, hence its price increases.
         All other prices must decrease, as they are not sold in the latest transaction
         """
-        price_change = 0.01
+        price_change = 10
         for value in self.inventory.values():
             if value == drink:
                 value.modify_price(True, price_change, amount)
             else:
                 value.modify_price(False, price_change, 0)
 
-    def sell_drink(self,drink: Drink, amount: int):
+    def sell_drink(self, drink: Drink, amount: int):
         """
         Function used to sell a drink. Used to show the sell price to
         the user (i.e. how much somebody needs to pay for their order),
         and updates the borrel balance
         """
+        self.time_stamps.append(time.time())
         sell_price = (drink.current_price * amount) / 100
         profit = (drink.current_price - drink.starting_price) * amount
         self.balance += profit
@@ -60,7 +66,7 @@ class Borrel:
 
     def reset(self) -> None:
         """
-        Resets all drink prices in the inventory to their default value, 
+        Resets all drink prices in the inventory to their default value,
         which is stored in the Drink object associated with the drink
         """
         for value in self.inventory.values():
@@ -73,6 +79,7 @@ class Borrel:
         with open("finalInventory.pkl", "wb") as f:
             pickle.dump(self.inventory, f)
         print("Final results of drinks sold written to file")
+        plt.close("all")
 
     def run_borrel(self) -> None:
         """
@@ -100,9 +107,11 @@ class Borrel:
             amount, running = self.safe_parse("Number of drinks sold: >> ")
             if running == False:
                 return
-            
+
             # Continue until user enters a valid amount of drinks to be ordered
-            while drink.can_sell_amount(amount) == False: # is possible to sell 0 drinks
+            while (
+                drink.can_sell_amount(amount) == False
+            ):  # is possible to sell 0 drinks
                 print("You can not sell this amount of drinks")
                 print(f"You can sell at most {drink.nr_drinks} bottles")
                 amount, running = self.safe_parse("Number of drinks sold: >> ")
@@ -116,8 +125,8 @@ class Borrel:
     def safe_parse(self, prompt: str) -> tuple[int, bool]:
         """
         Used to make sure that we can properly parse inputs to integers.
-        Additionally, performs checks for other possible commands and calls 
-        the functions associated with these commands when needed. 
+        Additionally, performs checks for other possible commands and calls
+        the functions associated with these commands when needed.
         Returns the parsed result when appropiate, along with a flag that indicates
         whether the program needs to continue running.
         """
