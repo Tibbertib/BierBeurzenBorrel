@@ -89,15 +89,24 @@ def safe_parse(prompt: str) -> tuple[int, bool]:
         result = input(prompt)
     return int(result), True
 
-
 """
-Main control loop that takes care of running the borrel. Includes functionality
-to parse input (orders) and update the inventory based on the input.
+Main control loop that takes care of running the borrel. 
 """
-
 initialise_inventory()
 # Keep track of a boolean flag that indicates when the program should be terminated
 running = True
+
+fig = plt.figure(figsize=(10,10))
+ax = fig.add_subplot(1,1,1)
+plots = []
+for i, drank in enumerate(inventory.values()):
+    lines, = ax.plot([],[])
+    plots.append(lines)
+    print(i)
+ax.set_ylim(0, 340)
+plt.xlabel('Time')
+plt.ylabel('Price in cents')
+
 
 while running:
     id, running = safe_parse("ID of the drink sold: >> ")
@@ -130,4 +139,15 @@ while running:
     sell_drink(drink, amount)
     update_prices(drink, amount)
     print_valid_stock()
+
+    for i,drink in enumerate(inventory.values()):
+        plots[i].set_xdata(time_stamps)
+        plots[i].set_ydata(drink.historic_prices)
+        plots[i].set_label(drink.name)
+    ax.set_xlim(time_stamps[0], time_stamps[-1])
+    ax.get_xaxis().set_ticks([])
+    plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=3)
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+    print('\n')
 
