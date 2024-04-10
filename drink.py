@@ -35,10 +35,10 @@ class Drink:
             self.nr_drinks -= drinks_sold
             if self.nr_drinks <= 0:
                 self.for_sale = False
-            self.current_price += price_change
+            self.current_price = min(self.current_price + price_change, self.max_price)
             self.historic_prices.append(self.current_price)
         else:
-            self.current_price -= price_change
+            self.current_price = max(self.current_price - price_change, self.min_price)
             self.historic_prices.append(self.current_price)
 
     def can_sell_amount(self, amount: int) -> bool:
@@ -61,4 +61,7 @@ class Drink:
         self.nr_drinks += amount
 
     def __repr__(self) -> str:
-        return f"{self.id} : {self.name}, current price = €{self.current_price/100:.2f}, drinks remaining = {self.nr_drinks}"
+        if self.for_sale:
+            return f"{self.id} : {self.name}, current price = €{self.current_price/100:.2f}, drinks remaining = {self.nr_drinks}"
+        else:
+            return f"{self.id} {self.name} IS SOLD OUT"

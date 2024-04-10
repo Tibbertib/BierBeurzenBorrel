@@ -1,4 +1,5 @@
 import pickle
+import random
 import time
 import matplotlib.pyplot as plt
 from drink import Drink
@@ -32,7 +33,7 @@ def update_prices(drink: Drink, amount: int):
     Parameter drink (Drink) is the drink that is sold, hence its price increases.
     All other prices must decrease, as they are not sold in the latest transaction
     """
-    price_change = 10
+    price_change = random.gauss(10,2)
     for value in inventory.values():
         if value == drink:
             value.modify_price(True, price_change, amount)
@@ -102,7 +103,6 @@ plots = []
 for i, drank in enumerate(inventory.values()):
     lines, = ax.plot([],[])
     plots.append(lines)
-    print(i)
 ax.set_ylim(0, 340)
 plt.xlabel('Time')
 plt.ylabel('Price in cents')
