@@ -6,7 +6,7 @@ from drink import Drink
 
 plt.ion()
 
-# balance = 0
+balance = 0
 inventory = {}
 time_stamps = [time.time()]
 
@@ -27,7 +27,7 @@ def print_valid_stock() -> None:
         print(value)
 
 
-def update_prices(drink: Drink, amount: int):
+def update_prices(drink: Drink, amount: int, balance):
     """
     Updates all prices of the drinks based on the latest sale.
     Parameter drink (Drink) is the drink that is sold, hence its price increases.
@@ -39,9 +39,15 @@ def update_prices(drink: Drink, amount: int):
             value.modify_price(True, price_change, amount)
         else:
             value.modify_price(False, price_change, 0)
+    if balance > 500:
+        for value in inventory.values():
+            value.steer_price(-price_change)
+    if balance < 500:
+        for value in inventory.values():
+            value.steer_price(price_change)
 
 
-def sell_drink(drink: Drink, amount: int):
+def sell_drink(drink: Drink, amount: int, balance):
     """
     Function used to sell a drink. Used to show the sell price to
     the user (i.e. how much somebody needs to pay for their order),
@@ -49,11 +55,13 @@ def sell_drink(drink: Drink, amount: int):
     """
     time_stamps.append(time.time())
     sell_price = (drink.current_price * amount) / 100
-    # profit = (drink.current_price - drink.starting_price) * amount
-    # balance += profit
+    profit = (drink.current_price - drink.starting_price) * amount
+    balance += profit
     print(f"\nSold for €{drink.current_price/100:.2f} per bottle")
     print(f"Sell price is €{sell_price:.2f}")
+    print(f"Current balance is: €{balance/100:.2f}")
     print("\n --------------------------- \n")
+    return balance
 
 
 def reset() -> None:
@@ -103,7 +111,7 @@ plots = []
 for i, drank in enumerate(inventory.values()):
     lines, = ax.plot([],[])
     plots.append(lines)
-ax.set_ylim(0, 340)
+ax.set_ylim(0, 280)
 plt.xlabel('Time')
 plt.ylabel('Price in cents')
 
@@ -136,14 +144,15 @@ while running:
         if running == False:
             break
 
-    sell_drink(drink, amount)
-    update_prices(drink, amount)
+    balance = sell_drink(drink, amount,balance)
+    update_prices(drink, amount, balance)
     print_valid_stock()
 
     for i,drink in enumerate(inventory.values()):
         plots[i].set_xdata(time_stamps)
         plots[i].set_ydata(drink.historic_prices)
-        plots[i].set_label(drink.name)
+        label = f"{drink.name} :: (€{drink.current_price/100:.2f})"
+        plots[i].set_label(label)
     ax.set_xlim(time_stamps[0], time_stamps[-1])
     ax.get_xaxis().set_ticks([])
     plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=3)

@@ -20,6 +20,7 @@ class Drink:
     historic_prices: list[int] = field(default_factory=list)
 
     def __post_init__(self):
+        self.initial_nr_drinks = self.nr_drinks
         self.historic_prices.append(self.starting_price)
         self.current_price = self.starting_price
 
@@ -53,6 +54,16 @@ class Drink:
         Return sell price to initial price
         """
         self.current_price = self.starting_price
+    
+    def steer_price(self, price_change) -> None:
+        """"
+        Used to only modify the price of a drink, for example to steer balance in preferred direction
+        """
+        if self.for_sale == False:
+            return
+        self.current_price += price_change
+        self.current_price = min(self.current_price, self.max_price)
+        self.current_price = max(self.current_price, self.min_price)
 
     def increase_drinks_nr(self, amount: int) -> None:
         """
@@ -62,6 +73,6 @@ class Drink:
 
     def __repr__(self) -> str:
         if self.for_sale:
-            return f"{self.id} : {self.name}, current price = €{self.current_price/100:.2f}, drinks remaining = {self.nr_drinks}"
+            return f"{self.id} : {self.name}, current price = €{self.current_price/100:.2f}, drinks remaining = {self.nr_drinks}, drinks sold = {self.initial_nr_drinks - self.nr_drinks}"
         else:
             return f"{self.id} {self.name} IS SOLD OUT"
