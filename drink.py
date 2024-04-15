@@ -55,13 +55,16 @@ class Drink:
         """
         self.current_price = self.starting_price
     
-    def steer_price(self, price_change) -> None:
+    def steer_price(self, price_change, decrease: bool) -> None:
         """"
         Used to only modify the price of a drink, for example to steer balance in preferred direction
         """
         if self.for_sale == False:
             return
-        self.current_price += price_change
+        if decrease:
+            self.current_price -= price_change
+        else:
+            self.current_price += price_change
         self.current_price = min(self.current_price, self.max_price)
         self.current_price = max(self.current_price, self.min_price)
 

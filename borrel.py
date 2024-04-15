@@ -18,10 +18,6 @@ def initialise_inventory():
     inventory[1] = Drink("Heineken", 1, 75, 90, 80, 100, True)
 
 
-# def display_balance() -> None:
-    # print(f"Current balance: €{balance}")
-
-
 def print_valid_stock() -> None:
     for value in inventory.values():
         print(value)
@@ -34,17 +30,20 @@ def update_prices(drink: Drink, amount: int, balance):
     All other prices must decrease, as they are not sold in the latest transaction
     """
     price_change = random.gauss(10,2)
-    for value in inventory.values():
-        if value == drink:
-            value.modify_price(True, price_change, amount)
-        else:
-            value.modify_price(False, price_change, 0)
     if balance > 500:
         for value in inventory.values():
-            value.steer_price(-price_change)
-    if balance < 500:
+            value.modify_price(False, price_change, amount)
+        return
+    elif balance < -500:
         for value in inventory.values():
-            value.steer_price(price_change)
+            value.modify_price(True, price_change, amount)
+        return
+    else:
+        for value in inventory.values():
+            if value == drink:
+                value.modify_price(True, price_change, amount)
+            else:
+                value.modify_price(False, price_change, 0)
 
 
 def sell_drink(drink: Drink, amount: int, balance):
@@ -145,7 +144,7 @@ while running:
             break
 
     balance = sell_drink(drink, amount,balance)
-    update_prices(drink, amount, balance)
+    update_prices(drink, amount,balance)
     print_valid_stock()
 
     for i,drink in enumerate(inventory.values()):
