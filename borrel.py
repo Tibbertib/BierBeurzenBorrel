@@ -93,7 +93,7 @@ def quit() -> None:
     print("Final results of drinks sold written to file")
     plt.close("all")
 
-def safe_parse(prompt: str) -> tuple[int, bool]:
+def safe_parse(prompt: str):
     """
     Used to make sure that we can properly parse inputs to integers.
     Additionally, performs checks for other possible commands and calls
@@ -104,6 +104,10 @@ def safe_parse(prompt: str) -> tuple[int, bool]:
     result = input(prompt)
     if result == "quit":
         return quit(), False
+    if result =="crash":
+        return "crash", True
+    if result == "reset":
+        return "reset", True
     while result.isdigit() == False:
         print("Input must be an integer \n")
         result = input(prompt)
@@ -142,6 +146,16 @@ while running:
     drink = inventory[id]
 
     amount, running = safe_parse("Number of drinks sold: >> ")
+    if amount == "crash":
+        drink.crash_price()
+        print(f"Crashed price of {drink.name} \n")
+        print_valid_stock()
+        continue
+    if amount == "reset":
+        drink.reset()
+        print(f"reset price of {drink.name} \n")
+        print_valid_stock()
+        continue
     if running == False:
         break
 
@@ -152,6 +166,16 @@ while running:
         print("You can not sell this amount of drinks")
         print(f"You can sell at most {drink.nr_drinks} bottles")
         amount, running = safe_parse("Number of drinks sold: >> ")
+        if amount == "crash":
+            drink.crash_price()
+            print(f"Crashed price of {drink.name} \n")
+            print_valid_stock()
+            continue
+        if amount == "reset":
+            drink.reset()
+            print(f"reset price of {drink.name} \n")
+            print_valid_stock()
+            continue
         if running == False:
             break
 

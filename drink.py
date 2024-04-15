@@ -74,6 +74,9 @@ class Drink:
         """
         self.nr_drinks += amount
 
+    def crash_price(self):
+        self.current_price = self.min_price + 5
+
     def __repr__(self) -> str:
         if self.for_sale:
             return f"{self.id} : {self.name}, current price = €{self.current_price/100:.2f}, drinks remaining = {self.nr_drinks}, drinks sold = {self.initial_nr_drinks - self.nr_drinks}"
