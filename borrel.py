@@ -14,8 +14,11 @@ def initialise_inventory():
     """
     This will later be changed to read input from a csv file to improve usability
     """
-    inventory[0] = Drink("Hertog Jan", 0, 80, 100, 90, 50, True)
-    inventory[1] = Drink("Heineken", 1, 75, 90, 80, 100, True)
+    inventory[0] = Drink("Hertog Jan", 0, 75, 150, 95, 900, True)
+    inventory[1] = Drink("Kriek", 1, 130, 180, 145, 168, True)
+    inventory[2] = Drink("Radler", 2, 70, 110, 90, 192, True)
+    inventory[3] = Drink("Leffe", 3, 155, 220, 170, 168, True)
+    inventory[4] = Drink("Karmeliet", 4, 195, 260, 210, 168, True)
 
 
 def print_valid_stock() -> None:
@@ -29,7 +32,11 @@ def update_prices(drink: Drink, amount: int, balance):
     Parameter drink (Drink) is the drink that is sold, hence its price increases.
     All other prices must decrease, as they are not sold in the latest transaction
     """
-    price_change = random.gauss(10,2)
+    price_change = 0
+    if amount > 5:
+        price_change = random.gauss(6,2)
+    else:
+        price_change = random.gauss(2,1)
     if balance > 500:
         for value in inventory.values():
             value.modify_price(False, price_change, amount)
