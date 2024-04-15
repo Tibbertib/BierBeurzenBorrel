@@ -37,11 +37,11 @@ def update_prices(drink: Drink, amount: int, balance):
         price_change = random.gauss(6,2)
     else:
         price_change = random.gauss(2,1)
-    if balance > 500:
+    if balance > 200:
         for value in inventory.values():
             value.modify_price(False, price_change, amount)
         return
-    elif balance < -500:
+    elif balance < -200:
         for value in inventory.values():
             value.modify_price(True, price_change, amount)
         return
@@ -66,6 +66,11 @@ def sell_drink(drink: Drink, amount: int, balance):
     print(f"\nSold for €{drink.current_price/100:.2f} per bottle")
     print(f"Sell price is €{sell_price:.2f}")
     print(f"Current balance is: €{balance/100:.2f}")
+    if balance < -200:
+        print("Past lower bound of balance, extra increase to prices")
+    if balance > 200:
+        print("Past upper bound of balance, extra decrease to prices")
+
     print("\n --------------------------- \n")
     return balance
 
