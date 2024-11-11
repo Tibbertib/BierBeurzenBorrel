@@ -5,6 +5,8 @@ import matplotlib
 
 import matplotlib.pyplot as plt
 from drink import Drink
+from pytimedinput import timedInput
+
 
 matplotlib.use('TkAgg')
 
@@ -13,16 +15,17 @@ plt.ion()
 balance = 0
 inventory = {}
 time_stamps = [time.time()]
+timeout = 10
 
 def initialise_inventory():
     """
     This will later be changed to read input from a csv file to improve usability
     """
-    inventory[0] = Drink("Hertog Jan", 0, 75, 150, 95, 900, True)
-    inventory[1] = Drink("Kriek", 1, 130, 180, 145, 168, True)
-    inventory[2] = Drink("Radler", 2, 70, 110, 90, 192, True)
-    inventory[3] = Drink("Leffe", 3, 155, 220, 170, 168, True)
-    inventory[4] = Drink("Karmeliet", 4, 195, 260, 210, 168, True)
+    inventory[0] = Drink("Hertog Jan", 0, 30, 250, 95, 900, True)
+    inventory[1] = Drink("Kriek", 1, 40, 360, 145, 168, True)
+    inventory[2] = Drink("Radler", 2, 10, 200, 90, 192, True)
+    inventory[3] = Drink("Leffe", 3, 50, 500, 170, 168, True)
+    inventory[4] = Drink("Karmeliet", 4, 50, 10000, 210, 168, True)
 
 
 def print_valid_stock() -> None:
@@ -36,25 +39,26 @@ def update_prices(drink: Drink, amount: int, balance):
     Parameter drink (Drink) is the drink that is sold, hence its price increases.
     All other prices must decrease, as they are not sold in the latest transaction
     """
-    price_change = 0
-    if amount > 5:
-        price_change = random.gauss(6,2)
-    else:
-        price_change = random.gauss(2,1)
-    if balance > 200:
+    if drink == None:
         for value in inventory.values():
-            value.modify_price(False, price_change, amount)
-        return
-    elif balance < -200:
-        for value in inventory.values():
-            value.modify_price(True, price_change, amount)
-        return
+            price_change = random.gauss(5, 8)
+            value.modify_price(False, price_change, 0)
     else:
         for value in inventory.values():
             if value == drink:
-                value.modify_price(True, price_change, amount)
+                price_change = random.gauss(amount*10,amount*3)
             else:
-                value.modify_price(False, price_change, 0)
+                price_change = random.gauss(amount*10/len(inventory), amount*3)
+            
+            if balance > 200:
+                    value.modify_price(False, price_change, amount)
+            elif balance < -200:
+                    value.modify_price(True, price_change, amount)
+            else:
+                if value == drink:
+                    value.modify_price(True, price_change, amount)
+                else:
+                    value.modify_price(False, price_change, 0)
 
 
 def sell_drink(drink: Drink, amount: int, balance):
@@ -105,17 +109,21 @@ def safe_parse(prompt: str):
     Returns the parsed result when appropiate, along with a flag that indicates
     whether the program needs to continue running.
     """
-    result = input(prompt)
-    if result == "quit":
-        return quit(), False
-    if result =="crash":
-        return "crash", True
-    if result == "reset":
-        return "reset", True
-    while result.isdigit() == False:
+    result, timedOut = timedInput(prompt)
+    while result.isdigit() == False and not timedOut:
         print("Input must be an integer \n")
-        result = input(prompt)
-    return int(result), True
+        result, timedOut = timedInput(prompt)
+    if timedOut:
+        return None, True, timedOut
+    else:
+        if result == "quit":
+            return quit(), False, timedOut
+        if result =="crash":
+            return "crash", True, timedOut
+        if result == "reset":
+            return "reset", True, timedOut
+        
+        return int(result), True, timedOut
 
 """
 Main control loop that takes care of running the borrel. 
@@ -137,40 +145,22 @@ print(plt.isinteractive())
 plt.show()
 
 while running:
-    id, running = safe_parse("ID of the drink sold: >> ")
-    if running == False:
-        break
+    id, running, timedOut = safe_parse("ID of the drink sold: >> ")
+    if not timedOut:
 
-    # Continue until a valid ID is entered. ID entered must be associated with a drink
-    while id not in inventory:
-        print("That input is not valid, please use a valid ID")
-        print_valid_stock()
-        id, running = safe_parse("ID of the drink sold: >> ")
         if running == False:
             break
-    drink = inventory[id]
 
-    amount, running = safe_parse("Number of drinks sold: >> ")
-    if amount == "crash":
-        drink.crash_price()
-        print(f"Crashed price of {drink.name} \n")
-        print_valid_stock()
-        continue
-    if amount == "reset":
-        drink.reset()
-        print(f"reset price of {drink.name} \n")
-        print_valid_stock()
-        continue
-    if running == False:
-        break
+        # Continue until a valid ID is entered. ID entered must be associated with a drink
+        while id not in inventory:
+            print("That input is not valid, please use a valid ID")
+            print_valid_stock()
+            id, running = safe_parse("ID of the drink sold: >> ")
+            if running == False:
+                break
+        drink = inventory[id]
 
-    # Continue until user enters a valid amount of drinks to be ordered
-    while (
-        drink.can_sell_amount(amount) == False
-    ):  # is possible to sell 0 drinks
-        print("You can not sell this amount of drinks")
-        print(f"You can sell at most {drink.nr_drinks} bottles")
-        amount, running = safe_parse("Number of drinks sold: >> ")
+        amount, running, timedOut = safe_parse("Number of drinks sold: >> ")
         if amount == "crash":
             drink.crash_price()
             print(f"Crashed price of {drink.name} \n")
@@ -184,9 +174,34 @@ while running:
         if running == False:
             break
 
-    balance = sell_drink(drink, amount,balance)
-    update_prices(drink, amount,balance)
-    print_valid_stock()
+        # Continue until user enters a valid amount of drinks to be ordered
+        while (
+            drink.can_sell_amount(amount) == False
+        ):  # is possible to sell 0 drinks
+            print("You can not sell this amount of drinks")
+            print(f"You can sell at most {drink.nr_drinks} bottles")
+            amount, running = safe_parse("Number of drinks sold: >> ")
+            if amount == "crash":
+                drink.crash_price()
+                print(f"Crashed price of {drink.name} \n")
+                print_valid_stock()
+                continue
+            if amount == "reset":
+                drink.reset()
+                print(f"reset price of {drink.name} \n")
+                print_valid_stock()
+                continue
+            if running == False:
+                break
+
+        balance = sell_drink(drink, amount,balance)
+    
+        update_prices(drink, amount,balance)
+        print_valid_stock()
+    else:
+        update_prices(None, 0, balance)
+        print("Updating prices due to timeout...\n")
+        time_stamps.append(time.time())
 
     for i,drink in enumerate(inventory.values()):
         plots[i].set_xdata(time_stamps)

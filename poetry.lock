@@ -594,6 +594,17 @@ files = [
 six = ">=1.5"
 
 [[package]]
+name = "pytimedinput"
+version = "2.0.1"
+description = "Query a user for input with a timeout."
+optional = false
+python-versions = ">=3.6,<4.0"
+files = [
+    {file = "pytimedinput-2.0.1-py3-none-any.whl", hash = "sha256:dcef8f5ce713f59cace8dc45e4dfc0e5c7369d44d533d4fbb772fa84ca36a110"},
+    {file = "pytimedinput-2.0.1.tar.gz", hash = "sha256:f680c9a51a5677ffd0d15334628eb2e9e15ddad4a2d9222e00bf6c0d77768f41"},
+]
+
+[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -626,4 +637,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "f5775fbdb7e6dafc2c2532a444429c0b1d12b593987d6c7e96207cfd57124178"
+content-hash = "b31341f5213ad953aec52ea7783a042d497c532962914b84325f3d263e9b7217"
