@@ -1,8 +1,12 @@
 import pickle
 import random
 import time
+import matplotlib
+
 import matplotlib.pyplot as plt
 from drink import Drink
+
+matplotlib.use('TkAgg')
 
 plt.ion()
 
@@ -129,7 +133,8 @@ for i, drank in enumerate(inventory.values()):
 ax.set_ylim(0, 280)
 plt.xlabel('Time')
 plt.ylabel('Price in cents')
-
+print(plt.isinteractive())
+plt.show()
 
 while running:
     id, running = safe_parse("ID of the drink sold: >> ")

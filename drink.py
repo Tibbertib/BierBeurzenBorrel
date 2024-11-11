@@ -17,7 +17,7 @@ class Drink:
     starting_price: int
     nr_drinks: int
     for_sale: bool = True
-    historic_prices: list[int] = field(default_factory=list)
+    historic_prices: list = field(default_factory=list)
 
     def __post_init__(self):
         self.initial_nr_drinks = self.nr_drinks
