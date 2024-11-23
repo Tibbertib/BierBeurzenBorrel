@@ -32,7 +32,7 @@ def initialise_inventory():
                                  i,
                                  int(bier['min_prijs']),
                                  int(bier['max_prijs']),
-                                 int(bier['prijs']),
+                                 int(bier['per_prijs']),
                                  int(bier['totaal stuks']),
             )
             
