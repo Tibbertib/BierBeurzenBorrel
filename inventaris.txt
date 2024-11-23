@@ -1,0 +1,13 @@
+naam	max_prijs	min_prijs	per_prijs	totaal stuks
+Blond	 850 	 85 	 208 	16
+Donker	 880 	 87 	 212 	56
+Duits	 500 	 75 	 95 	130
+Duvel	 800 	 100 	 214 	40
+Hertog Jan	 200 	 60 	 97 	192
+Kabouter	 867 	 100 	 208 	24
+Rest	 800 	 76 	 173 	54
+Twents	 450 	 45 	 137 	24
+Zoet	 517 	 67 	 140 	76
+Zomers	 775 	 80 	 209 	70
+Hertog Jan 0.0	 200 	 50 	 90 	24
+Radler 0.0	 300 	 50 	 105 	48

@@ -25,8 +25,8 @@ def initialise_inventory():
     This will later be changed to read input from a csv file to improve usability
     """
 
-    with open("bierbeursborrel.csv", 'r') as f:
-        bestand = csv.DictReader(f, delimiter=";")
+    with open("inventaris.txt", 'r') as f:
+        bestand = csv.DictReader(f, delimiter="\t")
         for i, bier in enumerate(bestand):
             inventory[i] = Drink(bier['naam'], 
                                  i,
@@ -153,6 +153,7 @@ ax.set_ylim(0, 280)
 plt.xlabel('Time')
 plt.ylabel('Price in cents')
 print(plt.isinteractive())
+plt.subplots_adjust(left=0.2)
 plt.show()
 
 while running:
@@ -222,7 +223,54 @@ while running:
         plots[i].set_label(label)
     ax.set_xlim(time_stamps[0], time_stamps[-1])
     ax.get_xaxis().set_ticks([])
-    plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=7)
+    plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=4)
+    
+    # add groups
+    textstr = """
+    Blond
+        Cornet
+        Cornet Smoked
+    Donker
+        Grand Prestige
+        La Trappe Isid'or
+        La Trappe Nillis
+        La Trappe Quadrupel
+        Zundert 10
+    Duits
+        Krombacher 0.0
+        Paulaner
+    Duvel
+        Duvel
+        Duvel 666
+        Duvel Tripel
+    Kabouter
+        Kasteel Rouge
+        La Chouffe 0.4%
+        La Chouffe Cherry
+    Rest
+        Brewdog Punk IPA
+        Korenwolf
+        St. Pierre Tripel
+        Straffe Hendrik Tripel
+        Leffe Tripel 0.0%
+    Twents
+        Grolsch Beugel
+        Grolsch Kanon
+    Zoet
+        Amstel Rose
+        Apple Bandit
+        Budels Honing
+        Leffe Ruby
+        Liefmans Fruitesse
+        Liefmans Peach
+    Zomers
+        Desperados
+        Mannenliefde
+        Skuumkoppe
+        t IJ wit
+    """
+    plt.text(0.03, 0.03, textstr, fontsize=12, transform=plt.gcf().transFigure)
+
     fig.canvas.draw()
     fig.canvas.flush_events()
     print('\n')
