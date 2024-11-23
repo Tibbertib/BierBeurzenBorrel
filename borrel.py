@@ -2,6 +2,7 @@ import pickle
 import random
 import time
 import matplotlib
+import csv
 
 import matplotlib.pyplot as plt
 from drink import Drink
@@ -16,17 +17,25 @@ balance = 0
 inventory = {}
 time_stamps = [time.time()]
 timeout = 10
+min_balance = -1000
+max_balance = 500
 
 def initialise_inventory():
     """
     This will later be changed to read input from a csv file to improve usability
     """
-    inventory[0] = Drink("Hertog Jan", 0, 30, 250, 95, 900, True)
-    inventory[1] = Drink("Kriek", 1, 40, 360, 145, 168, True)
-    inventory[2] = Drink("Radler", 2, 10, 200, 90, 192, True)
-    inventory[3] = Drink("Leffe", 3, 50, 500, 170, 168, True)
-    inventory[4] = Drink("Karmeliet", 4, 50, 10000, 210, 168, True)
 
+    with open("bierbeursborrel.csv", 'r') as f:
+        bestand = csv.DictReader(f, delimiter=";")
+        for i, bier in enumerate(bestand):
+            inventory[i] = Drink(bier['naam'], 
+                                 i,
+                                 int(bier['min_prijs']),
+                                 int(bier['max_prijs']),
+                                 int(bier['prijs']),
+                                 int(bier['totaal stuks']),
+            )
+            
 
 def print_valid_stock() -> None:
     for value in inventory.values():
@@ -50,15 +59,17 @@ def update_prices(drink: Drink, amount: int, balance):
             else:
                 price_change = random.gauss(amount*10/len(inventory), amount*3)
             
-            if balance > 200:
-                    value.modify_price(False, price_change, amount)
-            elif balance < -200:
-                    value.modify_price(True, price_change, amount)
-            else:
-                if value == drink:
-                    value.modify_price(True, price_change, amount)
-                else:
+            # extra compensation for out of bounds balance
+            if balance > max_balance:
                     value.modify_price(False, price_change, 0)
+            elif balance < min_balance:
+                    value.modify_price(True, price_change, 0)
+        
+            # price mod
+            if value == drink:
+                value.modify_price(True, price_change, amount)
+            else:
+                value.modify_price(False, price_change, 0)
 
 
 def sell_drink(drink: Drink, amount: int, balance):
@@ -145,6 +156,7 @@ print(plt.isinteractive())
 plt.show()
 
 while running:
+    print_valid_stock()
     id, running, timedOut = safe_parse("ID of the drink sold: >> ")
     if not timedOut:
 
@@ -155,7 +167,7 @@ while running:
         while id not in inventory:
             print("That input is not valid, please use a valid ID")
             print_valid_stock()
-            id, running = safe_parse("ID of the drink sold: >> ")
+            id, running, timedOut = safe_parse("ID of the drink sold: >> ")
             if running == False:
                 break
         drink = inventory[id]
@@ -180,7 +192,7 @@ while running:
         ):  # is possible to sell 0 drinks
             print("You can not sell this amount of drinks")
             print(f"You can sell at most {drink.nr_drinks} bottles")
-            amount, running = safe_parse("Number of drinks sold: >> ")
+            amount, running, timedOut = safe_parse("Number of drinks sold: >> ")
             if amount == "crash":
                 drink.crash_price()
                 print(f"Crashed price of {drink.name} \n")
@@ -210,7 +222,7 @@ while running:
         plots[i].set_label(label)
     ax.set_xlim(time_stamps[0], time_stamps[-1])
     ax.get_xaxis().set_ticks([])
-    plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=3)
+    plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=7)
     fig.canvas.draw()
     fig.canvas.flush_events()
     print('\n')
