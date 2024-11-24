@@ -50,20 +50,21 @@ def update_prices(drink: Drink, amount: int, balance):
     """
     if drink == None:
         for value in inventory.values():
-            price_change = random.gauss(5, 8)
+            price_change = random.gauss(3, 8)
             value.modify_price(False, price_change, 0)
     else:
         for value in inventory.values():
             if value == drink:
                 price_change = random.gauss(amount*10,amount*3)
             else:
-                price_change = random.gauss(amount*10/len(inventory), amount*3)
+                price_change = random.gauss(10, 3)  # TODO: figure out pricing response to large orders
             
             # extra compensation for out of bounds balance
             if balance > max_balance:
                     value.modify_price(False, price_change, 0)
             elif balance < min_balance:
                     value.modify_price(True, price_change, 0)
+
         
             # price mod
             if value == drink:
@@ -85,10 +86,13 @@ def sell_drink(drink: Drink, amount: int, balance):
     print(f"\nSold for €{drink.current_price/100:.2f} per bottle")
     print(f"Sell price is €{sell_price:.2f}")
     print(f"Current balance is: €{balance/100:.2f}")
-    if balance < -200:
+    if balance < min_balance:
         print("Past lower bound of balance, extra increase to prices")
-    if balance > 200:
+        time_stamps.append(time.time())  # DONT REMOVE WILL CAUSE HEADACHE
+
+    if balance > max_balance:
         print("Past upper bound of balance, extra decrease to prices")
+        time_stamps.append(time.time())  # DONT REMOVE WILL CAUSE HEADACHE
 
     print("\n --------------------------- \n")
     return balance
@@ -112,7 +116,7 @@ def quit() -> None:
     print("Final results of drinks sold written to file")
     plt.close("all")
 
-def safe_parse(prompt: str):
+def safe_id_parse(prompt: str):
     """
     Used to make sure that we can properly parse inputs to integers.
     Additionally, performs checks for other possible commands and calls
@@ -136,6 +140,27 @@ def safe_parse(prompt: str):
         
         return int(result), True, timedOut
 
+def safe_parse(prompt: str):
+    """
+    Used to make sure that we can properly parse inputs to integers.
+    Additionally, performs checks for other possible commands and calls
+    the functions associated with these commands when needed.
+    Returns the parsed result when appropiate, along with a flag that indicates
+    whether the program needs to continue running.
+    """
+    result = input(prompt)
+    if result == "quit":
+        return quit(), False
+    if result =="crash":
+        return "crash", True
+    if result == "reset":
+        return "reset", True
+    while result.isdigit() == False:
+        print("Input must be an integer \n")
+        result = input(prompt)
+    return int(result), True
+
+    
 """
 Main control loop that takes care of running the borrel. 
 """
@@ -158,7 +183,7 @@ plt.show()
 
 while running:
     print_valid_stock()
-    id, running, timedOut = safe_parse("ID of the drink sold: >> ")
+    id, running, timedOut = safe_id_parse("ID of the drink sold: >> ")
     if not timedOut:
 
         if running == False:
@@ -168,12 +193,12 @@ while running:
         while id not in inventory:
             print("That input is not valid, please use a valid ID")
             print_valid_stock()
-            id, running, timedOut = safe_parse("ID of the drink sold: >> ")
+            id, running, timedOut = safe_id_parse("ID of the drink sold: >> ")
             if running == False:
                 break
         drink = inventory[id]
 
-        amount, running, timedOut = safe_parse("Number of drinks sold: >> ")
+        amount, running = safe_parse("Number of drinks sold: >> ")
         if amount == "crash":
             drink.crash_price()
             print(f"Crashed price of {drink.name} \n")
@@ -193,7 +218,7 @@ while running:
         ):  # is possible to sell 0 drinks
             print("You can not sell this amount of drinks")
             print(f"You can sell at most {drink.nr_drinks} bottles")
-            amount, running, timedOut = safe_parse("Number of drinks sold: >> ")
+            amount, running = safe_parse("Number of drinks sold: >> ")
             if amount == "crash":
                 drink.crash_price()
                 print(f"Crashed price of {drink.name} \n")
@@ -216,7 +241,7 @@ while running:
         print("Updating prices due to timeout...\n")
         time_stamps.append(time.time())
 
-    for i,drink in enumerate(inventory.values()):
+    for i,drink in enumerate(inventory.values()):  # TODO: sold out drinks do not appear on graph
         plots[i].set_xdata(time_stamps)
         plots[i].set_ydata(drink.historic_prices)
         label = f"{drink.name} :: (€{drink.current_price/100:.2f})"
@@ -269,7 +294,7 @@ while running:
         Skuumkoppe
         t IJ wit
     """
-    plt.text(0.03, 0.03, textstr, fontsize=12, transform=plt.gcf().transFigure)
+    # plt.text(0.03, 0.03, textstr, fontsize=12, transform=plt.gcf().transFigure)
 
     fig.canvas.draw()
     fig.canvas.flush_events()
