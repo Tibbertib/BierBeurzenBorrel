@@ -53,29 +53,28 @@ def update_prices(drink: Drink, amount: int, balance):
     if drink == None:
         for value in inventory.values():
             price_change = random.gauss(3, 8)
-            value.modify_price(False, price_change, 0)
-            
+
             # extra compensation for out of bounds balance
             if balance > max_balance:
-                    value.modify_price(False, price_change, 0)
+                value.modify_price(False, price_change, 0)
             elif balance < min_balance:
-                    value.modify_price(True, price_change, 0)
+                value.modify_price(True, price_change, 0)
+            else:
+                value.modify_price(False, price_change, 0)
 
     else:
         for value in inventory.values():
             if value == drink:
-                price_change = random.gauss(amount*10,amount*3)  # TODO: quick rebound from market crash
+                price_change = random.gauss((amount**1.2)*10,(amount**1.2)*3)  # TODO: quick rebound from market crash
             else:
-                price_change = random.gauss(10, 3)  # TODO: figure out pricing response to large orders
-            
-            # extra compensation for out of bounds balance
-            if balance > max_balance:
-                    value.modify_price(False, price_change, 0)
-            elif balance < min_balance:
-                    value.modify_price(True, price_change, 0)
+                price_change = random.gauss(10, 3)  # TODO: figure out pricing response to large orders       
 
-            # price mod
-            if value == drink:
+            # extra compensation for out of bounds balance
+            if balance > max_balance and value != drink:
+                value.modify_price(False, price_change, 0)
+            elif balance < min_balance and value != drink:
+                value.modify_price(True, price_change, 0)
+            elif value == drink:
                 value.modify_price(True, price_change, amount)
             else:
                 value.modify_price(False, price_change, 0)
@@ -96,11 +95,8 @@ def sell_drink(drink: Drink, amount: int, balance):
     print(f"Current balance is: €{balance/100:.2f}")
     if balance < min_balance:
         print("Past lower bound of balance, extra increase to prices")
-        time_stamps.append(time.time())  # DONT REMOVE WILL CAUSE HEADACHE
-
     if balance > max_balance:
         print("Past upper bound of balance, extra decrease to prices")
-        time_stamps.append(time.time())  # DONT REMOVE WILL CAUSE HEADACHE
 
     print("\n --------------------------- \n")
     return balance
