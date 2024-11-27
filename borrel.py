@@ -179,6 +179,8 @@ for i, drank in enumerate(inventory.values()):
     lines, = ax.plot([],[])
     plots.append(lines)
 ax.set_ylim(0, 280)
+for line in plots:
+    line.set_linewidth(4)
 plt.xlabel('Time')
 plt.ylabel('Price in cents')
 print(plt.isinteractive())
@@ -301,6 +303,7 @@ while running:
         t IJ wit
     """
     plt.text(0.03, 0.03, textstr, fontsize=12, transform=plt.gcf().transFigure)
+    plt.grid(True)
 
     fig.canvas.draw()
     fig.canvas.flush_events()
