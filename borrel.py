@@ -9,6 +9,8 @@ from drink import Drink
 from pytimedinput import timedInput
 
 
+# TODO: Prijs verhoging statiegeld 10 cent
+
 matplotlib.use('TkAgg')
 
 plt.ion()
@@ -17,7 +19,7 @@ balance = 0
 inventory = {}
 time_stamps = [time.time()]
 timeout = 10
-min_balance = -1000
+min_balance = -500
 max_balance = 500
 
 def initialise_inventory():
@@ -52,10 +54,17 @@ def update_prices(drink: Drink, amount: int, balance):
         for value in inventory.values():
             price_change = random.gauss(3, 8)
             value.modify_price(False, price_change, 0)
+            
+            # extra compensation for out of bounds balance
+            if balance > max_balance:
+                    value.modify_price(False, price_change, 0)
+            elif balance < min_balance:
+                    value.modify_price(True, price_change, 0)
+
     else:
         for value in inventory.values():
             if value == drink:
-                price_change = random.gauss(amount*10,amount*3)
+                price_change = random.gauss(amount*10,amount*3)  # TODO: quick rebound from market crash
             else:
                 price_change = random.gauss(10, 3)  # TODO: figure out pricing response to large orders
             
@@ -65,7 +74,6 @@ def update_prices(drink: Drink, amount: int, balance):
             elif balance < min_balance:
                     value.modify_price(True, price_change, 0)
 
-        
             # price mod
             if value == drink:
                 value.modify_price(True, price_change, amount)
@@ -124,10 +132,10 @@ def safe_id_parse(prompt: str):
     Returns the parsed result when appropiate, along with a flag that indicates
     whether the program needs to continue running.
     """
-    result, timedOut = timedInput(prompt)
+    result, timedOut = timedInput(prompt, timeout=5)
     while result.isdigit() == False and not timedOut:
         print("Input must be an integer \n")
-        result, timedOut = timedInput(prompt)
+        result, timedOut = timedInput(prompt, timeout=5)
     if timedOut:
         return None, True, timedOut
     else:
@@ -242,9 +250,13 @@ while running:
         time_stamps.append(time.time())
 
     for i,drink in enumerate(inventory.values()):  # TODO: sold out drinks do not appear on graph
+        if not drink.for_sale:
+            label = f"{drink.name} :: SOLD OUT"
+            drink.historic_prices[-1] = 10000
+        else:
+            label = f"{drink.name} :: (€{drink.current_price/100:.2f})"
         plots[i].set_xdata(time_stamps)
         plots[i].set_ydata(drink.historic_prices)
-        label = f"{drink.name} :: (€{drink.current_price/100:.2f})"
         plots[i].set_label(label)
     ax.set_xlim(time_stamps[0], time_stamps[-1])
     ax.get_xaxis().set_ticks([])
@@ -294,7 +306,7 @@ while running:
         Skuumkoppe
         t IJ wit
     """
-    # plt.text(0.03, 0.03, textstr, fontsize=12, transform=plt.gcf().transFigure)
+    plt.text(0.03, 0.03, textstr, fontsize=12, transform=plt.gcf().transFigure)
 
     fig.canvas.draw()
     fig.canvas.flush_events()
