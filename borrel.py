@@ -256,7 +256,7 @@ while running:
         plots[i].set_label(label)
     ax.set_xlim(time_stamps[0], time_stamps[-1])
     ax.get_xaxis().set_ticks([])
-    plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=4)
+    plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=4,  fontsize=18, prop=dict(weight='bold'))
     
     # add groups
     textstr = """
