@@ -3,6 +3,7 @@ import random
 import time
 import matplotlib
 import csv
+import traceback
 
 import matplotlib.pyplot as plt
 from drink import Drink
@@ -11,7 +12,7 @@ from pytimedinput import timedInput
 
 # TODO: Prijs verhoging statiegeld 10 cent
 
-matplotlib.use('TkAgg')
+matplotlib.use("TkAgg")
 
 plt.ion()
 
@@ -22,22 +23,24 @@ timeout = 10
 min_balance = -500
 max_balance = 500
 
+
 def initialise_inventory():
     """
     This will later be changed to read input from a csv file to improve usability
     """
 
-    with open("inventaris.txt", 'r') as f:
+    with open("inventaris.txt", "r") as f:
         bestand = csv.DictReader(f, delimiter="\t")
         for i, bier in enumerate(bestand):
-            inventory[i] = Drink(bier['naam'], 
-                                 i,
-                                 int(bier['min_prijs']),
-                                 int(bier['max_prijs']),
-                                 int(bier['per_prijs']),
-                                 int(bier['totaal stuks']),
+            inventory[i] = Drink(
+                bier["naam"],
+                i,
+                int(bier["min_prijs"]),
+                int(bier["max_prijs"]),
+                int(bier["per_prijs"]),
+                int(bier["totaal stuks"]),
             )
-            
+
 
 def print_valid_stock() -> None:
     for value in inventory.values():
@@ -55,9 +58,9 @@ def update_prices(drink: Drink, amount: int, balance):
             price_change = random.gauss(3, 8)
 
             # extra compensation for out of bounds balance
-            if balance > max_balance:
+            if balance > max_balance and value.historic_prices[-1] > 0.8 * value.starting_price:
                 value.modify_price(False, price_change, 0)
-            elif balance < min_balance:
+            elif balance < min_balance and value.historic_prices[-1] < 1.2*value.starting_price:
                 value.modify_price(True, price_change, 0)
             else:
                 value.modify_price(False, price_change, 0)
@@ -65,9 +68,13 @@ def update_prices(drink: Drink, amount: int, balance):
     else:
         for value in inventory.values():
             if value == drink:
-                price_change = random.gauss((amount**1.2)*10,(amount**1.2)*3)  # TODO: quick rebound from market crash
+                price_change = random.gauss(
+                    (amount**1.2) * 10, (amount**1.2) * 3
+                )
             else:
-                price_change = random.gauss(10, 3)  # TODO: figure out pricing response to large orders       
+                price_change = random.gauss(
+                    10, 3
+                )
 
             # extra compensation for out of bounds balance
             if balance > max_balance and value != drink:
@@ -120,6 +127,7 @@ def quit() -> None:
     print("Final results of drinks sold written to file")
     plt.close("all")
 
+
 def safe_id_parse(prompt: str):
     """
     Used to make sure that we can properly parse inputs to integers.
@@ -137,12 +145,13 @@ def safe_id_parse(prompt: str):
     else:
         if result == "quit":
             return quit(), False, timedOut
-        if result =="crash":
+        if result == "crash":
             return "crash", True, timedOut
         if result == "reset":
             return "reset", True, timedOut
-        
+
         return int(result), True, timedOut
+
 
 def safe_parse(prompt: str):
     """
@@ -155,7 +164,7 @@ def safe_parse(prompt: str):
     result = input(prompt)
     if result == "quit":
         return quit(), False
-    if result =="crash":
+    if result == "crash":
         return "crash", True
     if result == "reset":
         return "reset", True
@@ -164,7 +173,7 @@ def safe_parse(prompt: str):
         result = input(prompt)
     return int(result), True
 
-    
+
 """
 Main control loop that takes care of running the borrel. 
 """
@@ -172,17 +181,17 @@ initialise_inventory()
 # Keep track of a boolean flag that indicates when the program should be terminated
 running = True
 
-fig = plt.figure(figsize=(10,10))
-ax = fig.add_subplot(1,1,1)
+fig = plt.figure(figsize=(10, 10))
+ax = fig.add_subplot(1, 1, 1)
 plots = []
 for i, drank in enumerate(inventory.values()):
-    lines, = ax.plot([],[])
+    (lines,) = ax.plot([], [])
     plots.append(lines)
-ax.set_ylim(0, 280)
+ax.set_ylim(0, 350)
 for line in plots:
     line.set_linewidth(4)
-plt.xlabel('Time')
-plt.ylabel('Price in cents')
+plt.xlabel("Time")
+plt.ylabel("Price in cents")
 print(plt.isinteractive())
 plt.subplots_adjust(left=0.2)
 plt.show()
@@ -237,16 +246,18 @@ try:
                 if running == False:
                     break
 
-            balance = sell_drink(drink, amount,balance)
-        
-            update_prices(drink, amount,balance)
+            balance = sell_drink(drink, amount, balance)
+
+            update_prices(drink, amount, balance)
             print_valid_stock()
         else:
             update_prices(None, 0, balance)
             print("Updating prices due to timeout...\n")
             time_stamps.append(time.time())
 
-        for i,drink in enumerate(inventory.values()):  # TODO: sold out drinks do not appear on graph
+        for i, drink in enumerate(
+            inventory.values()
+        ):  # TODO: sold out drinks do not appear on graph
             if not drink.for_sale:
                 label = f"{drink.name} :: SOLD OUT"
                 drink.historic_prices[-1] = 10000
@@ -257,8 +268,16 @@ try:
             plots[i].set_label(label)
         ax.set_xlim(time_stamps[0], time_stamps[-1])
         ax.get_xaxis().set_ticks([])
-        plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=4,  fontsize=18, prop=dict(weight='bold'))
-        
+        plt.legend(
+            bbox_to_anchor=(0, 1.02, 1, 0.2),
+            loc="lower left",
+            mode="expand",
+            borderaxespad=0,
+            ncol=4,
+            fontsize=18,
+            prop=dict(weight="bold"),
+        )
+
         # add groups
         textstr = """
         Blond
@@ -308,6 +327,7 @@ try:
 
         fig.canvas.draw()
         fig.canvas.flush_events()
-        print('\n')
+        print("\n")
 except Exception as e:
+    print(traceback.format_exc())
     quit()
