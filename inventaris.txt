@@ -1,10 +1,10 @@
-naam	max_prijs	min_prijs	per_prijs	totaal stuks
-Blond	208	85	850	16
-Donker	196	87	814	56
-Duits	99	79	500	130
-Duvel	212	100	780	40
-Kabouter	216	105	933	24
-Rest	176	79	822	54
-Twents	137	45	450	24
-Zoet	135	63	505	76
-Zomers	206	80	769	70
+naam	per_prijs	min_prijs	max_prijs	totaal stuks
+Blond	220	85	850	16
+Donker	205	150	814	56
+Duits	120	90	500	130
+Duvel	220	100	780	40
+Kabouter	225	120	933	24
+Rest	185	79	822	54
+Twents	145	45	450	24
+Zoet	135	100	505	76
+Zomers	215	90	769	70
