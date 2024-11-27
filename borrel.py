@@ -187,125 +187,127 @@ print(plt.isinteractive())
 plt.subplots_adjust(left=0.2)
 plt.show()
 
-while running:
-    print_valid_stock()
-    id, running, timedOut = safe_id_parse("ID of the drink sold: >> ")
-    if not timedOut:
+try:
+    while running:
+        print_valid_stock()
+        id, running, timedOut = safe_id_parse("ID of the drink sold: >> ")
+        if not timedOut:
 
-        if running == False:
-            break
-
-        # Continue until a valid ID is entered. ID entered must be associated with a drink
-        while id not in inventory:
-            print("That input is not valid, please use a valid ID")
-            print_valid_stock()
-            id, running, timedOut = safe_id_parse("ID of the drink sold: >> ")
             if running == False:
                 break
-        drink = inventory[id]
 
-        amount, running = safe_parse("Number of drinks sold: >> ")
-        if amount == "crash":
-            drink.crash_price()
-            print(f"Crashed price of {drink.name} \n")
-            continue
-        if amount == "reset":
-            drink.reset()
-            print(f"reset price of {drink.name} \n")
-            continue
-        if running == False:
-            break
+            # Continue until a valid ID is entered. ID entered must be associated with a drink
+            while id not in inventory:
+                print("That input is not valid, please use a valid ID")
+                print_valid_stock()
+                id, running, timedOut = safe_id_parse("ID of the drink sold: >> ")
+                if running == False:
+                    break
+            drink = inventory[id]
 
-        # Continue until user enters a valid amount of drinks to be ordered
-        while (
-            drink.can_sell_amount(amount) == False
-        ):  # is possible to sell 0 drinks
-            print("You can not sell this amount of drinks")
-            print(f"You can sell at most {drink.nr_drinks} bottles")
             amount, running = safe_parse("Number of drinks sold: >> ")
             if amount == "crash":
                 drink.crash_price()
                 print(f"Crashed price of {drink.name} \n")
-                print_valid_stock()
                 continue
             if amount == "reset":
                 drink.reset()
                 print(f"reset price of {drink.name} \n")
-                print_valid_stock()
                 continue
             if running == False:
                 break
 
-        balance = sell_drink(drink, amount,balance)
-    
-        update_prices(drink, amount,balance)
-        print_valid_stock()
-    else:
-        update_prices(None, 0, balance)
-        print("Updating prices due to timeout...\n")
-        time_stamps.append(time.time())
+            # Continue until user enters a valid amount of drinks to be ordered
+            while (
+                drink.can_sell_amount(amount) == False
+            ):  # is possible to sell 0 drinks
+                print("You can not sell this amount of drinks")
+                print(f"You can sell at most {drink.nr_drinks} bottles")
+                amount, running = safe_parse("Number of drinks sold: >> ")
+                if amount == "crash":
+                    drink.crash_price()
+                    print(f"Crashed price of {drink.name} \n")
+                    print_valid_stock()
+                    continue
+                if amount == "reset":
+                    drink.reset()
+                    print(f"reset price of {drink.name} \n")
+                    print_valid_stock()
+                    continue
+                if running == False:
+                    break
 
-    for i,drink in enumerate(inventory.values()):  # TODO: sold out drinks do not appear on graph
-        if not drink.for_sale:
-            label = f"{drink.name} :: SOLD OUT"
-            drink.historic_prices[-1] = 10000
+            balance = sell_drink(drink, amount,balance)
+        
+            update_prices(drink, amount,balance)
+            print_valid_stock()
         else:
-            label = f"{drink.name} :: (€{drink.current_price/100:.2f})"
-        plots[i].set_xdata(time_stamps)
-        plots[i].set_ydata(drink.historic_prices)
-        plots[i].set_label(label)
-    ax.set_xlim(time_stamps[0], time_stamps[-1])
-    ax.get_xaxis().set_ticks([])
-    plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=4,  fontsize=18, prop=dict(weight='bold'))
-    
-    # add groups
-    textstr = """
-    Blond
-        Cornet
-        Cornet Smoked
-    Donker
-        Grand Prestige
-        La Trappe Isid'or
-        La Trappe Nillis
-        La Trappe Quadrupel
-        Zundert 10
-    Duits
-        Krombacher 0.0
-        Paulaner
-    Duvel
+            update_prices(None, 0, balance)
+            print("Updating prices due to timeout...\n")
+            time_stamps.append(time.time())
+
+        for i,drink in enumerate(inventory.values()):  # TODO: sold out drinks do not appear on graph
+            if not drink.for_sale:
+                label = f"{drink.name} :: SOLD OUT"
+                drink.historic_prices[-1] = 10000
+            else:
+                label = f"{drink.name} :: (€{drink.current_price/100:.2f})"
+            plots[i].set_xdata(time_stamps)
+            plots[i].set_ydata(drink.historic_prices)
+            plots[i].set_label(label)
+        ax.set_xlim(time_stamps[0], time_stamps[-1])
+        ax.get_xaxis().set_ticks([])
+        plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left", mode="expand", borderaxespad=0, ncol=4,  fontsize=18, prop=dict(weight='bold'))
+        
+        # add groups
+        textstr = """
+        Blond
+            Cornet
+            Cornet Smoked
+        Donker
+            Grand Prestige
+            La Trappe Isid'or
+            La Trappe Nillis
+            La Trappe Quadrupel
+            Zundert 10
+        Duits
+            Krombacher 0.0
+            Paulaner
         Duvel
-        Duvel 666
-        Duvel Tripel
-    Kabouter
-        Kasteel Rouge
-        La Chouffe 0.4%
-        La Chouffe Cherry
-    Rest
-        Brewdog Punk IPA
-        Korenwolf
-        St. Pierre Tripel
-        Straffe Hendrik Tripel
-        Leffe Tripel 0.0%
-    Twents
-        Grolsch Beugel
-        Grolsch Kanon
-    Zoet
-        Amstel Rose
-        Apple Bandit
-        Budels Honing
-        Leffe Ruby
-        Liefmans Fruitesse
-        Liefmans Peach
-    Zomers
-        Desperados
-        Mannenliefde
-        Skuumkoppe
-        t IJ wit
-    """
-    plt.text(0.03, 0.03, textstr, fontsize=12, transform=plt.gcf().transFigure)
-    plt.grid(True)
+            Duvel
+            Duvel 666
+            Duvel Tripel
+        Kabouter
+            Kasteel Rouge
+            La Chouffe 0.4%
+            La Chouffe Cherry
+        Rest
+            Brewdog Punk IPA
+            Korenwolf
+            St. Pierre Tripel
+            Straffe Hendrik Tripel
+            Leffe Tripel 0.0%
+        Twents
+            Grolsch Beugel
+            Grolsch Kanon
+        Zoet
+            Amstel Rose
+            Apple Bandit
+            Budels Honing
+            Leffe Ruby
+            Liefmans Fruitesse
+            Liefmans Peach
+        Zomers
+            Desperados
+            Mannenliefde
+            Skuumkoppe
+            t IJ wit
+        """
+        plt.text(0.03, 0.03, textstr, fontsize=12, transform=plt.gcf().transFigure)
+        plt.grid(True)
 
-    fig.canvas.draw()
-    fig.canvas.flush_events()
-    print('\n')
-
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+        print('\n')
+except Exception as e:
+    quit()
