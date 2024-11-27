@@ -206,12 +206,10 @@ while running:
         if amount == "crash":
             drink.crash_price()
             print(f"Crashed price of {drink.name} \n")
-            print_valid_stock()
             continue
         if amount == "reset":
             drink.reset()
             print(f"reset price of {drink.name} \n")
-            print_valid_stock()
             continue
         if running == False:
             break
